@@ -1,0 +1,172 @@
+<html>
+	<head>
+		<title>VirtualResultList usage</title>
+		<script type="module">
+			/* The quickest and dirtiest possible vanilla js usage example */
+			import { VirtualResultList, Cursor } from "/dist/index.js";
+			const fetcher = (offset, count) => {
+				return new Promise((resolve, reject) => {
+					const results = [];
+					for (let i = 0; i < count; i++) {
+						results.push({index: offset+i+1, value: Math.sqrt(offset+i+1)});
+					}
+					resolve({rows: results, totalRows: 10000});
+				})
+				
+			}
+			const list = new VirtualResultList(fetcher, {offset: 0, count: 50});
+			const cursor = list.cursor(0, 25, 2);
+
+			cursor.onUpdate(() => {
+				const data = cursor.view;
+				
+				const listTarget = document.querySelector('#rowTarget');
+				listTarget.innerHTML = '';
+				data.rows.forEach((row) => {
+					const rowElem = document.createElement('div');
+					rowElem.className = 'tableRow';
+					rowElem.innerHTML = `<div class="double">${row.index}</div><div class="double">${row.value}</div>`;
+					listTarget.appendChild(rowElem);
+				})
+
+				const pageinfo = document.querySelector('#pageInfo');
+				const maxPage = Math.ceil(list.length / data.pageSize);
+				pageInfo.textContent = `Showing page ${data.page} of ${maxPage}`;
+				const rowInfo = document.querySelector('#rowInfo');
+				rowInfo.textContent = `Rows ${data.offset+1} through ${data.offset + data.rows.length}`;
+				const pagesize = document.querySelector('#pagesize');
+				if (parseInt(pagesize.value) != parseInt(data.pageSize)) {
+					pageSize.value = parseInt(data.pageSize);
+				}
+
+				const pagePercent = (data.page / maxPage * 100).toFixed(2) + '%';
+				const scrollHandle = document.querySelector('#scrollHandle');
+				scrollHandle.style.top = pagePercent;
+
+			})
+
+			document.querySelector('#prev').addEventListener('click', () => {
+				cursor.prev();
+			});
+			document.querySelector('#next').addEventListener('click', () => {
+				cursor.next();
+			});
+			document.querySelector('#first').addEventListener('click', () => {
+				cursor.first();
+			});
+			document.querySelector('#last').addEventListener('click', () => {
+				cursor.last();
+			});
+			document.querySelector('#pagesize').addEventListener('change', (e) => {
+				cursor.pageSize(parseInt(e.target.value));
+			});
+			const scroller = document.querySelector('#scroller');
+			scroller.addEventListener('click', (e) => {
+				const clickPos = e.offsetY / scroller.getBoundingClientRect().height
+				const targetPage = Math.floor(list.length * clickPos / cursor.view.pageSize);
+				cursor.jumpToPage(targetPage);
+			})
+		</script>
+		<style>
+			* * {
+				box-sizing: border-box;
+			}
+
+			#scroller {
+				height: 100%;
+				position: absolute;
+				right: -20px;
+				border: 1px solid black;
+				width: 20px;
+			}
+			.tableRow {
+				padding: 3px;
+				width: 100%;
+				display: grid;
+				grid-template-columns: 25% 25% 25% 25%;
+				grid-template-rows: 25px;
+				border: 1px solid black;
+			}
+
+			.header {
+				border: 1px solid #ccc;
+				font-weight: 600;
+				padding: 5px;
+			}
+
+			.double {
+				grid-column: span 2;
+			}
+
+			.full {
+				grid-column: span 4;
+			}
+
+			.tbody {
+				position: relative;
+				width: 100%;
+			}
+
+			#handleTrack {
+				width: 100%;
+				position: relative;
+				height: calc(100% - 25px)
+			}
+
+			#scrollHandle {
+				width: 100%;
+				background-color: #ddd;
+				height: 25px;
+				top: 0px;
+				position: absolute;
+			}
+		</style>
+	</head>
+	<body>
+		
+		<div id="listTarget" style="width: 600px; margin: 50px">
+			
+			<div class="tableRow header">
+				<div><button id="first">First Page</button></div>
+				<div><button id="prev">Previous Page</button></div>
+				<div><button id="next">Next Page</button></div>
+				<div><button id="last">Last Page</button></div>
+			</div>
+			<div class="tableRow header">
+				<div>Page Size:</div>
+				<div>
+					<select id='pagesize'>
+						<option selected value="25">25</option>
+						<option value="50">50</option>
+						<option value="75">75</option>
+					</select>
+				</div>
+			</div>
+			<div class="tableRow header">
+				
+				<div class='full' id="pageInfo"></div>
+				
+			</div>
+			<div class="tableRow header">
+				
+				<div class='full' id="rowInfo"></div>
+				
+			</div>
+			<div class="tableRow header">
+				<div class="double">Row Index</div>
+				<div class="double">Row Value</div>
+			</div>
+			
+			<div class="tbody">
+				<div id="scroller">
+					<div id="handleTrack">
+						<div id="scrollHandle">
+
+						</div>
+					</div>
+				</div>
+				<div id="rowTarget"></div>
+			</div>
+		</table>
+	</body>
+</html>
