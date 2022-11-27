@@ -21,14 +21,7 @@ export declare class Cursor<Datatype> {
         preloadPages: number;
     });
     get destroyed(): boolean;
-    get view(): {
-        offset: number;
-        page: number;
-        pageSize: number;
-        preloadPages: number;
-        totalRows: number | undefined;
-        rows: (Datatype | PendingRow)[] | undefined;
-    };
+    get view(): CursorView<Datatype>;
     destroy(): void;
     pageSize(size?: number): number;
     getRows(): any[];

@@ -54,14 +54,14 @@ export class Cursor<Datatype> {
 		return this._destroyed;
 	}
 
-	get view() {
+	get view(): CursorView<Datatype> {
 		return {
 			offset: this.settings.offset,
 			page: Math.floor(this.settings.offset / this.settings.pageSize)+1,
 			pageSize: this.settings.pageSize,
 			preloadPages: this.settings.preloadPages,
-			totalRows: this._view.totalRows,
-			rows: this._view.rows
+			totalRows: this._view.totalRows || 0,
+			rows: this._view.rows || []
 		}
 	}
 	
