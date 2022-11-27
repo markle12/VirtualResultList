@@ -1,6 +1,5 @@
-import { VirtualResultList } from "./VirtualResultList.js";
-import { Cursor } from "./Cursor.js";
-export { VirtualResultList, Cursor };
+export { VirtualResultList } from "./VirtualResultList.js";
+export { Cursor, type CursorView } from "./Cursor.js";
 export type ResultFetcher = (offset: number, count: number) => Promise<FetchResult>;
 export interface FetchResult {
     rows: Array<any>;
