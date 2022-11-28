@@ -9,8 +9,10 @@ export class VirtualResultList {
         this._length = 0;
         this.eventer = new Eventer();
         this.reset = () => {
+            const resetEvent = { offset: 0, count: this.length };
             this.ranges = [];
             this._length = 0;
+            this.eventer.emit('rangeUpdated', resetEvent);
             this.fetch(this.initialFetch.offset, this.initialFetch.count);
         };
         this.setFetcher = (fetcher, initialFetch) => {

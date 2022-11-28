@@ -15,8 +15,10 @@ export class VirtualResultList<Datatype> {
 	}
 
 	public reset = () => {
+		const resetEvent = {offset: 0, count: this.length};
 		this.ranges = [];
 		this._length = 0;
+		this.eventer.emit('rangeUpdated', resetEvent);
 		this.fetch(this.initialFetch.offset, this.initialFetch.count);
 	}
 
