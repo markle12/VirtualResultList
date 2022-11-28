@@ -23,6 +23,7 @@ export class Cursor<Datatype> {
 		};
 
 		this.cleanup.push(resultSet.onRangeUpdate((range) => {
+			console.log('got parent event', range);
 			const eventRangeStart = range.offset;
 			const eventRangeEnd = range.offset + range.count;
 			const viewRangeStart = this.settings.offset;
@@ -32,6 +33,7 @@ export class Cursor<Datatype> {
 				|| (eventRangeStart <= viewRangeStart && eventRangeEnd >= viewRangeEnd)
 				|| (viewRangeStart <= eventRangeStart && viewRangeEnd >= eventRangeEnd)) {
 					this._view.rows = this.getRows();
+					console.log('emit cursor event');
 					this.eventer.emit('update');
 			}
 		}));
