@@ -26,6 +26,7 @@ export declare class Cursor<Datatype> {
     pageSize(size?: number): number;
     getRows(): any[];
     onUpdate: (listener: (data: CursorView<Datatype>) => void) => () => void;
+    update: (data: Datatype | Array<Datatype>, offset?: number) => void;
     private preload;
     jumpToOffset(offset: number): void;
     jumpToPage: (page: number) => void;

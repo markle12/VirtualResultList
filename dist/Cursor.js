@@ -15,6 +15,20 @@ export class Cursor {
                 this.eventer.off('update', wrappedListener);
             };
         };
+        // For passing data back into the list, from actions that update said data
+        this.update = (data, offset) => {
+            offset = offset || this.view.offset;
+            if (!Array.isArray(data)) {
+                data = [data];
+            }
+            const insert = {
+                offset,
+                fetchDate: new Date(),
+                fetchSize: data.length,
+                values: data
+            };
+            this.resultSet.update(insert);
+        };
         this.jumpToPage = (page) => {
             // Pages start at 1, for the humans
             if (page < 1) {

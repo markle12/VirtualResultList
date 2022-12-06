@@ -1,5 +1,5 @@
 import { Eventer } from './Eventer.js';
-import { PendingRow } from './index.js';
+import { PendingRow, ResultRange } from './index.js';
 import { VirtualResultList } from './VirtualResultList.js';
 
 export interface CursorView<Datatype>{
@@ -94,6 +94,21 @@ export class Cursor<Datatype> {
 		return () => {
 			this.eventer.off('update', wrappedListener);
 		}
+	}
+
+	// For passing data back into the list, from actions that update said data
+	public update = (data: Datatype | Array<Datatype>, offset?: number) => {
+		offset = offset || this.view.offset;
+		if (!Array.isArray(data)) {
+			data = [data];
+		}
+		const insert : ResultRange<Datatype> = {
+			offset,
+			fetchDate: new Date(),
+			fetchSize: data.length,
+			values: data
+		}
+		this.resultSet.update(insert);
 	}
 
 	private preload() {

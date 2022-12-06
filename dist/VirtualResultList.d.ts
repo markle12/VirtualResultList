@@ -1,5 +1,5 @@
 import { Cursor } from './Cursor.js';
-import { ResultFetcher } from "./index.js";
+import { ResultFetcher, ResultRange } from "./index.js";
 export declare class VirtualResultList<Datatype> {
     private fetcher;
     private initialFetch;
@@ -16,6 +16,7 @@ export declare class VirtualResultList<Datatype> {
         count: number;
     }) => void;
     cursor: (offset: number, pageSize: number, preloadPages: number) => Cursor<Datatype>;
+    update: (data: ResultRange<Datatype>) => void;
     onRangeUpdate: (listener: (range: {
         offset: number;
         count: number;

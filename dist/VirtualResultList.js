@@ -25,6 +25,11 @@ export class VirtualResultList {
         this.cursor = (offset, pageSize, preloadPages) => {
             return new Cursor(this, { offset, pageSize, preloadPages });
         };
+        // For passing data back into the list, from actions that update said data
+        // ie when rating an item, the server passes back the updated row, which can then be pushed back in here
+        this.update = (data) => {
+            this.addRange(data);
+        };
         this.onRangeUpdate = (listener) => {
             const wrappedListener = (event) => {
                 listener(event.detail);
@@ -55,13 +60,26 @@ export class VirtualResultList {
             }
             else {
                 for (let i = 0; i < this.ranges.length; i++) {
-                    if (this.ranges[i].offset <= range.offset) {
-                        if (i == this.ranges.length - 1) {
+                    if (this.ranges[i].offset <= range.offset) { // ranges[i] is prior to new range
+                        if (range.offset + range.values.length <= this.ranges[i].offset + this.ranges[i].values.length) {
+                            // New range fits entirely inside existing range
+                            let startRange = Object.assign(Object.assign({}, this.ranges[i]), { offset: this.ranges[i].offset, values: this.ranges[i].values.slice(0, range.offset - this.ranges[i].offset) });
+                            let endRange = Object.assign(Object.assign({}, this.ranges[i]), { offset: range.offset + range.values.length, values: this.ranges[i].values.slice(range.offset + range.values.length) });
+                            this.ranges.splice(i, 1, startRange, range, endRange);
+                            rangeAdded = true;
+                            break;
+                        }
+                        else if (i == this.ranges.length - 1) {
+                            // ranges[i] is the last range in the list
+                            if (this.ranges[i].offset + this.ranges[i].values.length >= range.offset) {
+                                this.ranges[i].values.splice(this.ranges[i].offset + this.ranges[i].values.length - range.offset);
+                            }
                             this.ranges.push(range);
                             rangeAdded = true;
                             break;
                         }
                         else {
+                            // range may overlap ranges[i] and ranges[i+1]
                             const nextRange = this.ranges[i + 1];
                             if (nextRange.offset > range.offset) {
                                 const currentRangeOverlap = this.ranges[i].offset + this.ranges[i].values.length - range.offset;
@@ -89,10 +107,21 @@ export class VirtualResultList {
                             }
                         }
                     }
+                    else {
+                        if (this.ranges[i].offset < range.offset + range.values.length) {
+                            this.ranges[i].values.splice(0, (range.offset + range.values.length) - this.ranges[i].offset);
+                        }
+                        this.ranges.unshift(range);
+                        rangeAdded = true;
+                        break;
+                    }
                 }
             }
             if (rangeAdded) {
                 this.eventer.emit('rangeUpdated', rangeInfo);
+            }
+            else {
+                console.log(`Couldn't figure out where to put a range; worth investigating I bet`);
             }
         };
         this.fetch = (offset, count) => {
